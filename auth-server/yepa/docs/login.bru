@@ -1,0 +1,25 @@
+meta {
+  name: Login
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:3000/api/login/initiate
+}
+body {
+  {
+    "email": "lecturer@oauife.edu.ng",
+    "userType": "LECTURER"
+  }
+}
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("should initiate lecturer login", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.message).to.equal("OTP sent to provided email address");
+  });
+}

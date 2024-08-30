@@ -1,0 +1,26 @@
+meta {
+  name: Signup
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/api/signup/initiate
+}
+
+body {
+  {
+    "email": "student@student.oauife.edu.ng",
+    "userType": "STUDENT"
+  }
+}
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("should initiate student signup", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.message).to.equal("OTP sent to provided email address");
+  });
+}

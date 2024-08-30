@@ -1,0 +1,50 @@
+{
+  "name": "neuron-api",
+  "scripts": {
+    "test": "vitest",
+    "lint": "biome check .",
+    "test:ui": "vitest --ui",
+    "prepare": "npx simple-git-hooks",
+    "format": "biome format . --write",
+    "dev": "wrangler dev src/index.ts",
+    "db:migrate": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
+    "lint:fix": "pnpm lint --write --unsafe",
+    "deploy": "wrangler deploy --minify src/index.ts"
+  },
+  "engines": {
+    "node": ">=18.14"
+  },
+  "packageManager": "pnpm@9.6.0",
+  "dependencies": {
+    "@hono/valibot-validator": "^0.3.0",
+    "drizzle-orm": "^0.32.0",
+    "hono": "^4.5.1",
+    "nanoid": "^5.0.7",
+    "picocolors": "^1.0.1",
+    "pino": "^9.3.1",
+    "valibot": "^0.37.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.4.23",
+    "@cloudflare/workers-types": "^4.20240529.0",
+    "simple-git-hooks": "^2.11.1",
+    "@biomejs/biome": "^1.8.3",
+    "drizzle-kit": "^0.23.1",
+    "lint-staged": "^15.2.7",
+    "@vitest/ui": "^2.0.5",
+    "typescript": "^5.5.3",
+    "wrangler": "^3.57.2",
+    "vitest": "1.5.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "biome format --no-errors-on-unmatched --write",
+      "biome check --no-errors-on-unmatched"
+    ],
+    "!(*.ts)": ["biome format --no-errors-on-unmatched --write"]
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  }
+}

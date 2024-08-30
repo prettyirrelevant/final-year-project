@@ -1,0 +1,29 @@
+meta {
+  name: Complete Login
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:3000/api/login/complete
+}
+
+body {
+  {
+    "id": "user_345678",
+    "otp": "789012",
+    "deviceId": "device_abc123",
+    "deviceName": "iPhone 12",
+    "deviceOs": "iOS 15.5"
+  }
+}
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("should complete login", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.message).to.equal("Login successful");
+  });
+}

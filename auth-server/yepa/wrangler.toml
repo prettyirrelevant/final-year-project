@@ -1,0 +1,22 @@
+name = "neuron-api"
+compatibility_date = "2024-07-18"
+compatibility_flags = ["nodejs_compat"]
+
+# [vars]
+# MY_VAR = "my-variable"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "6fcb9f8540214afc9c81a05ffc4e18c7"
+
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "my-bucket"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "neuron-db"
+database_id = "fb89f6dd-b09a-4b16-b7e9-5fa7fc39cd6e"
+
+# [ai]
+# binding = "AI"
