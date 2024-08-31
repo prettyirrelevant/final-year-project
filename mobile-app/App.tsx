@@ -1,26 +1,24 @@
-import React, {useState, useEffect, useCallback} from 'react';
-import {View, StyleSheet, ActivityIndicator} from 'react-native';
-import Toast from 'react-native-toast-message';
-import {BleManager} from 'react-native-ble-plx';
-import {open, type DB} from '@op-engineering/op-sqlite';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
+import { open, type DB } from "@op-engineering/op-sqlite";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { BleManager } from "react-native-ble-plx";
 import {
-  Provider as PaperProvider,
   DefaultTheme,
+  Provider as PaperProvider,
   Text,
-} from 'react-native-paper';
+} from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
-// Import API functions
-import {initiateAuth, completeAuth} from './utils/api';
+import { completeAuth, initiateAuth } from "./utils/api";
 
-// Import components
-import Login from './components/Login';
-import UserDetails from './components/UserDetails';
-import LogoutButton from './components/LogoutButton';
-import OTPVerification from './components/OTPVerification';
-import StudentAttendanceScreen from './components/StudentAttendanceScreen';
-import LecturerAttendanceScreen from './components/LecturerAttendanceScreen';
+import LecturerAttendanceScreen from "./components/LecturerAttendanceScreen";
+import Login from "./components/Login";
+import LogoutButton from "./components/LogoutButton";
+import OTPVerification from "./components/OTPVerification";
+import StudentAttendanceScreen from "./components/StudentAttendanceScreen";
+import UserDetails from "./components/UserDetails";
 
 // Initialize BLE Manager
 const bleManager = new BleManager();
@@ -29,8 +27,8 @@ const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#1565c0',
-    accent: '#f50057',
+    primary: "#1565c0",
+    accent: "#f50057",
   },
 };
 
@@ -57,15 +55,15 @@ interface MarkedAttendance {
 }
 
 const App: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [db, setDb] = useState<DB | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [currentScreen, setCurrentScreen] = useState<string>('login');
+  const [currentScreen, setCurrentScreen] = useState<string>("login");
   const [userDetails, setUserDetails] = useState<{
     firstName: string;
     lastName: string;
     matricNumber?: string;
-  }>({firstName: '', lastName: '', matricNumber: ''});
+  }>({ firstName: "", lastName: "", matricNumber: "" });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -79,9 +77,9 @@ const App: React.FC = () => {
     initApp();
 
     // Set up BLE state change listener
-    const subscription = bleManager.onStateChange(state => {
-      if (state === 'PoweredOn') {
-        console.log('Bluetooth is powered on');
+    const subscription = bleManager.onStateChange((state) => {
+      if (state === "PoweredOn") {
+        console.log("Bluetooth is powered on");
       }
     }, true);
 
@@ -92,28 +90,28 @@ const App: React.FC = () => {
   }, []);
 
   const showToast = useCallback(
-    (message: string, type: 'success' | 'error' = 'success') => {
+    (message: string, type: "success" | "error" = "success") => {
       Toast.show({
         type: type,
         text1: message,
-        position: 'top',
+        position: "top",
         visibilityTime: 3000,
         autoHide: true,
         topOffset: 30,
         bottomOffset: 40,
       });
     },
-    [],
+    []
   );
 
   const initDatabase = async () => {
     try {
-      const database = await open({name: 'MainDB.db'});
+      const database = open({ name: "MainDB.db" });
       setDb(database);
       await createTables(database);
     } catch (error) {
-      console.error('Error initializing database:', error);
-      showToast('Failed to initialize database', 'error');
+      console.error("Error initializing database:", error);
+      showToast("Failed to initialize database", "error");
     }
   };
 
@@ -150,10 +148,10 @@ const App: React.FC = () => {
           timestamp INTEGER
         )
       `);
-      console.log('Tables created successfully');
+      console.log("Tables created successfully");
     } catch (error) {
-      console.error('Error creating tables:', error);
-      showToast('Failed to create database tables', 'error');
+      console.error("Error creating tables:", error);
+      showToast("Failed to create database tables", "error");
     }
   };
 
@@ -165,7 +163,7 @@ const App: React.FC = () => {
     records: AttendanceRecord[];
   }) => {
     if (!db) {
-      console.error('Database not initialized');
+      console.error("Database not initialized");
       return;
     }
 
@@ -179,7 +177,7 @@ const App: React.FC = () => {
           sessionData.courseCode,
           sessionData.courseName,
           Date.now(),
-        ],
+        ]
       );
 
       for (const record of sessionData.records) {
@@ -191,22 +189,22 @@ const App: React.FC = () => {
             record.studentName,
             record.matricNumber,
             record.timestamp,
-          ],
+          ]
         );
       }
 
-      console.log('Attendance session saved successfully');
+      console.log("Attendance session saved successfully");
     } catch (error) {
-      console.error('Error saving attendance session:', error);
-      showToast('Failed to save attendance session', 'error');
+      console.error("Error saving attendance session:", error);
+      showToast("Failed to save attendance session", "error");
     }
   };
 
   const fetchAttendanceSessions = async (
-    lecturerEmail: string,
+    lecturerEmail: string
   ): Promise<AttendanceSession[]> => {
     if (!db) {
-      console.error('Database not initialized');
+      console.error("Database not initialized");
       return [];
     }
 
@@ -219,7 +217,7 @@ const App: React.FC = () => {
          LEFT JOIN AttendanceRecords r ON s.sessionId = r.sessionId
          WHERE s.lecturerEmail = ?
          ORDER BY s.createdAt DESC, r.timestamp ASC`,
-        [lecturerEmail],
+        [lecturerEmail]
       );
 
       const rows = result.rows?._array ?? [];
@@ -227,7 +225,7 @@ const App: React.FC = () => {
       // Group the results by session
       const sessionsMap = new Map<string, AttendanceSession>();
 
-      rows.forEach(row => {
+      rows.forEach((row) => {
         if (!sessionsMap.has(row.sessionId)) {
           sessionsMap.set(row.sessionId, {
             sessionId: row.sessionId,
@@ -252,15 +250,15 @@ const App: React.FC = () => {
 
       return Array.from(sessionsMap.values());
     } catch (error) {
-      console.error('Error fetching attendance sessions:', error);
-      showToast('Failed to fetch attendance sessions', 'error');
+      console.error("Error fetching attendance sessions:", error);
+      showToast("Failed to fetch attendance sessions", "error");
       return [];
     }
   };
 
   const saveStudentAttendance = async (attendanceData: MarkedAttendance) => {
     if (!db) {
-      console.error('Database not initialized');
+      console.error("Database not initialized");
       return;
     }
 
@@ -275,45 +273,45 @@ const App: React.FC = () => {
           attendanceData.courseName,
           attendanceData.expiryTimestamp,
           attendanceData.timestamp,
-        ],
+        ]
       );
 
-      console.log('Student attendance saved successfully');
+      console.log("Student attendance saved successfully");
     } catch (error) {
-      console.error('Error saving student attendance:', error);
-      showToast('Failed to save student attendance', 'error');
+      console.error("Error saving student attendance:", error);
+      showToast("Failed to save student attendance", "error");
     }
   };
 
   const fetchStudentAttendances = async (): Promise<MarkedAttendance[]> => {
     if (!db) {
-      console.error('Database not initialized');
+      console.error("Database not initialized");
       return [];
     }
 
     try {
       const result = await db.executeAsync(
-        'SELECT * FROM StudentAttendances WHERE studentEmail = ? ORDER BY timestamp DESC',
-        [email],
+        "SELECT * FROM StudentAttendances WHERE studentEmail = ? ORDER BY timestamp DESC",
+        [email]
       );
 
       return result.rows?._array ?? [];
     } catch (error) {
-      console.error('Error fetching student attendances:', error);
-      showToast('Failed to fetch student attendances', 'error');
+      console.error("Error fetching student attendances:", error);
+      showToast("Failed to fetch student attendances", "error");
       return [];
     }
   };
 
   const checkAuthStatus = async () => {
-    const storedUserId = await AsyncStorage.getItem('userId');
+    const storedUserId = await AsyncStorage.getItem("userId");
     if (storedUserId) {
       try {
-        const storedEmail = await AsyncStorage.getItem('email');
-        const firstName = await AsyncStorage.getItem('firstName');
-        const lastName = await AsyncStorage.getItem('lastName');
-        const matricNumber = await AsyncStorage.getItem('matricNumber');
-        const storedUserType = await AsyncStorage.getItem('userType');
+        const storedEmail = await AsyncStorage.getItem("email");
+        const firstName = await AsyncStorage.getItem("firstName");
+        const lastName = await AsyncStorage.getItem("lastName");
+        const matricNumber = await AsyncStorage.getItem("matricNumber");
+        const storedUserType = await AsyncStorage.getItem("userType");
 
         if (firstName && lastName && storedUserType && storedEmail) {
           setUserId(storedUserId);
@@ -324,21 +322,21 @@ const App: React.FC = () => {
             matricNumber: matricNumber || undefined,
           });
           setCurrentScreen(
-            storedUserType === 'lecturer'
-              ? 'lecturerDashboard'
-              : 'studentDashboard',
+            storedUserType === "lecturer"
+              ? "lecturerDashboard"
+              : "studentDashboard"
           );
         } else {
           // If any required data is missing, reset to login
           await handleLogout();
         }
       } catch (error) {
-        console.error('Error fetching user details from AsyncStorage:', error);
-        showToast('Failed to fetch user details', 'error');
-        setCurrentScreen('login');
+        console.error("Error fetching user details from AsyncStorage:", error);
+        showToast("Failed to fetch user details", "error");
+        setCurrentScreen("login");
       }
     } else {
-      setCurrentScreen('login');
+      setCurrentScreen("login");
     }
   };
 
@@ -348,13 +346,13 @@ const App: React.FC = () => {
       if (response.success) {
         setUserId(response.data!.id);
         setEmail(_email);
-        setCurrentScreen('otpVerification');
+        setCurrentScreen("otpVerification");
       } else {
-        showToast(response.message, 'error');
+        showToast(response.message, "error");
       }
     } catch (error) {
-      console.error('Login error:', error);
-      showToast('An error occurred during login', 'error');
+      console.error("Login error:", error);
+      showToast("An error occurred during login", "error");
     }
   };
 
@@ -363,30 +361,30 @@ const App: React.FC = () => {
       return;
     }
 
-    const userType = email.endsWith('@student.oauife.edu.ng')
-      ? 'student'
-      : 'lecturer';
+    const userType = email.endsWith("@student.oauife.edu.ng")
+      ? "student"
+      : "lecturer";
     try {
       const response = await completeAuth(userId, otp);
       if (response.success) {
-        await AsyncStorage.setItem('userId', userId);
-        await AsyncStorage.setItem('email', email);
-        await AsyncStorage.setItem('userType', userType);
+        await AsyncStorage.setItem("userId", userId);
+        await AsyncStorage.setItem("email", email);
+        await AsyncStorage.setItem("userType", userType);
 
-        const storedFirstName = await AsyncStorage.getItem('firstName');
+        const storedFirstName = await AsyncStorage.getItem("firstName");
         if (!storedFirstName) {
-          setCurrentScreen('userDetails');
+          setCurrentScreen("userDetails");
         } else {
           setCurrentScreen(
-            userType === 'lecturer' ? 'lecturerDashboard' : 'studentDashboard',
+            userType === "lecturer" ? "lecturerDashboard" : "studentDashboard"
           );
         }
       } else {
-        showToast(response.message, 'error');
+        showToast(response.message, "error");
       }
     } catch (error) {
-      console.error('OTP verification error:', error);
-      showToast('An error occurred during OTP verification', 'error');
+      console.error("OTP verification error:", error);
+      showToast("An error occurred during OTP verification", "error");
     }
   };
 
@@ -399,67 +397,67 @@ const App: React.FC = () => {
       return;
     }
 
-    const userType = email.endsWith('@student.oauife.edu.ng')
-      ? 'student'
-      : 'lecturer';
+    const userType = email.endsWith("@student.oauife.edu.ng")
+      ? "student"
+      : "lecturer";
     try {
       setUserDetails(details);
-      await AsyncStorage.setItem('firstName', details.firstName);
-      await AsyncStorage.setItem('lastName', details.lastName);
+      await AsyncStorage.setItem("firstName", details.firstName);
+      await AsyncStorage.setItem("lastName", details.lastName);
       if (details.matricNumber) {
-        await AsyncStorage.setItem('matricNumber', details.matricNumber);
+        await AsyncStorage.setItem("matricNumber", details.matricNumber);
       }
       setCurrentScreen(
-        userType === 'lecturer' ? 'lecturerDashboard' : 'studentDashboard',
+        userType === "lecturer" ? "lecturerDashboard" : "studentDashboard"
       );
-      showToast('User details saved successfully', 'success');
+      showToast("User details saved successfully", "success");
     } catch (error) {
-      console.error('User details submission error:', error);
-      showToast('An error occurred while submitting user details', 'error');
+      console.error("User details submission error:", error);
+      showToast("An error occurred while submitting user details", "error");
     }
   };
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.multiRemove([
-        'userId',
-        'email',
-        'firstName',
-        'lastName',
-        'matricNumber',
-        'userType',
+        "userId",
+        "email",
+        "firstName",
+        "lastName",
+        "matricNumber",
+        "userType",
       ]);
-      setCurrentScreen('login');
+      setCurrentScreen("login");
       setUserId(null);
-      setEmail('');
-      setUserDetails({firstName: '', lastName: '', matricNumber: ''});
-      showToast('Logged out successfully', 'success');
+      setEmail("");
+      setUserDetails({ firstName: "", lastName: "", matricNumber: "" });
+      showToast("Logged out successfully", "success");
     } catch (error) {
-      console.error('Logout error:', error);
-      showToast('Failed to log out', 'error');
+      console.error("Logout error:", error);
+      showToast("Failed to log out", "error");
     }
   };
 
   const renderScreen = () => {
-    console.log('Current screen:', currentScreen);
+    console.log("Current screen:", currentScreen);
     try {
       switch (currentScreen) {
-        case 'login':
+        case "login":
           return <Login onLogin={handleLogin} />;
-        case 'otpVerification':
+        case "otpVerification":
           return <OTPVerification onVerify={handleOTPVerification} />;
-        case 'userDetails':
+        case "userDetails":
           return (
             <UserDetails
               onSubmit={handleUserDetailsSubmit}
               userType={
-                email.endsWith('@student.oauife.edu.ng')
-                  ? 'student'
-                  : 'lecturer'
+                email.endsWith("@student.oauife.edu.ng")
+                  ? "student"
+                  : "lecturer"
               }
             />
           );
-        case 'lecturerDashboard':
+        case "lecturerDashboard":
           return (
             <LecturerAttendanceScreen
               showToast={showToast}
@@ -468,15 +466,15 @@ const App: React.FC = () => {
               onLogout={handleLogout}
               saveAttendanceSession={saveAttendanceSession}
               fetchAttendanceSessions={fetchAttendanceSessions}
-              lecturerName={userDetails.firstName + ' ' + userDetails.lastName}
+              lecturerName={userDetails.firstName + " " + userDetails.lastName}
             />
           );
-        case 'studentDashboard':
+        case "studentDashboard":
           return (
             <StudentAttendanceScreen
               bleManager={bleManager}
-              studentName={userDetails.firstName + ' ' + userDetails.lastName}
-              matricNumber={userDetails.matricNumber || ''}
+              studentName={userDetails.firstName + " " + userDetails.lastName}
+              matricNumber={userDetails.matricNumber || ""}
               showToast={showToast}
               onLogout={handleLogout}
               saveStudentAttendance={saveStudentAttendance}
@@ -487,7 +485,7 @@ const App: React.FC = () => {
           return null;
       }
     } catch (error) {
-      console.error('Error rendering screen:', error);
+      console.error("Error rendering screen:", error);
       return (
         <View style={styles.centerContainer}>
           <Text>An error occurred. Please try again.</Text>
@@ -521,8 +519,8 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

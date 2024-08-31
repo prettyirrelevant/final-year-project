@@ -1,29 +1,29 @@
-import React, {useState} from 'react';
-import {StyleSheet, KeyboardAvoidingView, Platform} from 'react-native';
+import React, { useState } from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import {
-  TextInput,
   Button,
   Card,
-  Title,
   Paragraph,
   Text,
-} from 'react-native-paper';
+  TextInput,
+  Title,
+} from "react-native-paper";
 
 type OTPVerificationProps = {
   onVerify: (otp: string) => void;
 };
 
-const OTPVerification: React.FC<OTPVerificationProps> = ({onVerify}) => {
-  const [otp, setOTP] = useState('');
-  const [otpError, setOtpError] = useState('');
+const OTPVerification: React.FC<OTPVerificationProps> = ({ onVerify }) => {
+  const [otp, setOTP] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleVerify = () => {
     if (otp.length !== 6) {
-      setOtpError('OTP must be 6 digits long');
+      setOtpError("OTP must be 6 digits long");
       return;
     }
-    setOtpError('');
+    setOtpError("");
     setIsLoading(true);
     onVerify(otp);
     setIsLoading(false);
@@ -31,8 +31,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({onVerify}) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       <Card style={styles.card}>
         <Card.Content>
           <Title style={styles.title}>Verify OTP</Title>
@@ -42,9 +43,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({onVerify}) => {
           <TextInput
             label="Enter OTP"
             value={otp}
-            onChangeText={text => {
+            onChangeText={(text) => {
               setOTP(text);
-              setOtpError('');
+              setOtpError("");
             }}
             style={styles.input}
             keyboardType="number-pad"
@@ -58,7 +59,8 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({onVerify}) => {
             style={styles.button}
             onPress={handleVerify}
             disabled={!!isLoading}
-            labelStyle={styles.buttonText}>
+            labelStyle={styles.buttonText}
+          >
             Verify OTP
           </Button>
         </Card.Content>
@@ -70,9 +72,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({onVerify}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   card: {
     elevation: 4,
@@ -80,19 +82,19 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     marginBottom: 24,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
   input: {
     marginBottom: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   button: {
     marginTop: 8,
@@ -100,10 +102,10 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 8,
   },
 });

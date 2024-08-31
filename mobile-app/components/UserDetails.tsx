@@ -1,18 +1,18 @@
-import React, {useState} from 'react';
+import React, { useState } from "react";
 import {
-  StyleSheet,
   KeyboardAvoidingView,
-  ScrollView,
   Platform,
-} from 'react-native';
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import {
-  TextInput,
   Button,
   Card,
-  Title,
   Paragraph,
   Text,
-} from 'react-native-paper';
+  TextInput,
+  Title,
+} from "react-native-paper";
 
 type UserDetailsProps = {
   onSubmit: (details: {
@@ -20,29 +20,29 @@ type UserDetailsProps = {
     lastName: string;
     matricNumber?: string;
   }) => void;
-  userType: 'student' | 'lecturer' | null;
+  userType: "student" | "lecturer" | null;
 };
 
-const UserDetails: React.FC<UserDetailsProps> = ({onSubmit, userType}) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [matricNumber, setMatricNumber] = useState('');
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+const UserDetails: React.FC<UserDetailsProps> = ({ onSubmit, userType }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [matricNumber, setMatricNumber] = useState("");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validateInputs = () => {
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
     if (!firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = "First name is required";
     }
     if (!lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = "Last name is required";
     }
 
-    if (userType === 'student') {
+    if (userType === "student") {
       if (!matricNumber.trim()) {
-        newErrors.matricNumber = 'Matric number is required';
+        newErrors.matricNumber = "Matric number is required";
       } else if (!/^[A-Z]{3}\/\d{4}\/\d{3}$/.test(matricNumber)) {
-        newErrors.matricNumber = 'Invalid matric number format';
+        newErrors.matricNumber = "Invalid matric number format";
       }
     }
 
@@ -53,17 +53,18 @@ const UserDetails: React.FC<UserDetailsProps> = ({onSubmit, userType}) => {
   const handleSubmit = () => {
     if (validateInputs()) {
       onSubmit(
-        userType === 'student'
-          ? {firstName, lastName, matricNumber}
-          : {firstName, lastName},
+        userType === "student"
+          ? { firstName, lastName, matricNumber }
+          : { firstName, lastName }
       );
     }
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Card style={styles.card}>
           <Card.Content>
@@ -93,7 +94,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({onSubmit, userType}) => {
               <Text style={styles.errorText}>{errors.lastName}</Text>
             )}
 
-            {userType === 'student' && (
+            {userType === "student" && (
               <>
                 <TextInput
                   label="Matric Number"
@@ -112,7 +113,8 @@ const UserDetails: React.FC<UserDetailsProps> = ({onSubmit, userType}) => {
               mode="contained"
               onPress={handleSubmit}
               style={styles.button}
-              labelStyle={styles.buttonText}>
+              labelStyle={styles.buttonText}
+            >
               Submit
             </Button>
           </Card.Content>
@@ -125,11 +127,11 @@ const UserDetails: React.FC<UserDetailsProps> = ({onSubmit, userType}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 16,
   },
   card: {
@@ -138,19 +140,19 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     marginBottom: 24,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
   input: {
     marginBottom: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   button: {
     marginTop: 8,
@@ -158,10 +160,10 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 8,
   },
 });

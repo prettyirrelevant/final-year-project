@@ -1,35 +1,30 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import { formatDistance, formatDistanceToNow } from "date-fns";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  View,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { BleManager, Device } from "react-native-ble-plx";
 import {
-  Card,
-  Title,
-  Paragraph,
-  Button,
   Avatar,
+  Button,
+  Card,
   Divider,
-} from 'react-native-paper';
-import {BleManager, Device} from 'react-native-ble-plx';
-import {formatDistance, formatDistanceToNow} from 'date-fns';
-import Share from 'react-native-share';
-import LogoutButton from './LogoutButton';
-import {
-  formatDateTime,
-  generateStudentAttendanceFilename,
-  now,
-} from '../utils/helpers';
-import {requestBlePermissions} from '../utils/permission';
+  Paragraph,
+  Title,
+} from "react-native-paper";
+import { now } from "../utils/helpers";
+import { requestBlePermissions } from "../utils/permission";
+import LogoutButton from "./LogoutButton";
 
 const SCAN_TIMEOUT = 10000;
-const DEVICE_NAME = 'ESP32-Attendance';
-const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
-const CHAR_UUID_MARK_ATTENDANCE = 'beb5483e-36e1-4688-b7f5-ea07361b26a9';
-const CHAR_UUID_RETRIEVE_SESSIONS = 'beb5483f-36e1-4688-b7f5-ea07361b26ab';
+const DEVICE_NAME = "ESP32-Attendance";
+const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+const CHAR_UUID_MARK_ATTENDANCE = "beb5483e-36e1-4688-b7f5-ea07361b26a9";
+const CHAR_UUID_RETRIEVE_SESSIONS = "beb5483f-36e1-4688-b7f5-ea07361b26ab";
 
 interface AttendanceSession {
   sessionId: string;
@@ -46,7 +41,7 @@ interface StudentAttendanceScreenProps {
   bleManager: BleManager;
   studentName: string;
   matricNumber: string;
-  showToast: (message: string, type?: 'success' | 'error') => void;
+  showToast: (message: string, type?: "success" | "error") => void;
   onLogout: () => Promise<void>;
   saveStudentAttendance: (attendanceData: MarkedAttendance) => Promise<void>;
   fetchStudentAttendances: () => Promise<MarkedAttendance[]>;
@@ -62,8 +57,8 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
   fetchStudentAttendances,
 }) => {
   const [connectionState, setConnectionState] = useState<
-    'disconnected' | 'scanning' | 'connecting' | 'connected'
-  >('disconnected');
+    "disconnected" | "scanning" | "connecting" | "connected"
+  >("disconnected");
   const [device, setDevice] = useState<Device | null>(null);
   const [isFetchingSessions, setIsFetchingSessions] = useState(false);
   const [isMarkingAttendance, setIsMarkingAttendance] = useState(false);
@@ -82,13 +77,13 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
       const attendances = await fetchStudentAttendances();
       setMarkedSessions(attendances);
     } catch (error) {
-      console.error('Error loading marked attendances:', error);
-      showToast('Failed to load marked attendances', 'error');
+      console.error("Error loading marked attendances:", error);
+      showToast("Failed to load marked attendances", "error");
     }
   }, [fetchStudentAttendances, showToast]);
 
   const resetConnection = useCallback(() => {
-    setConnectionState('disconnected');
+    setConnectionState("disconnected");
     setDevice(null);
     bleManager.stopDeviceScan();
     setAvailableSessions([]);
@@ -97,105 +92,105 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
   const retrieveAvailableSessions = useCallback(
     (currentDevice: Device) => {
       if (!currentDevice) {
-        console.error('No device available for retrieving sessions');
+        console.error("No device available for retrieving sessions");
         return;
       }
       setIsFetchingSessions(true);
       currentDevice
         .readCharacteristicForService(SERVICE_UUID, CHAR_UUID_RETRIEVE_SESSIONS)
-        .then(characteristic => {
+        .then((characteristic) => {
           if (characteristic.value) {
             const decodedValue = atob(characteristic.value);
             try {
               const sessions: AttendanceSession[] = JSON.parse(decodedValue);
-              console.log('All sessions from device:', sessions);
-              console.log('Current marked sessions:', markedSessions);
+              console.log("All sessions from device:", sessions);
+              console.log("Current marked sessions:", markedSessions);
 
               const filteredSessions = sessions.filter(
-                session =>
+                (session) =>
                   !markedSessions.some(
-                    marked => marked.sessionId === session.sessionId,
-                  ),
+                    (marked) => marked.sessionId === session.sessionId
+                  )
               );
 
-              console.log('Filtered sessions:', filteredSessions);
+              console.log("Filtered sessions:", filteredSessions);
               setAvailableSessions(filteredSessions);
-              showToast('Available sessions retrieved successfully', 'success');
+              showToast("Available sessions retrieved successfully", "success");
             } catch (parseError) {
-              console.error('Error parsing sessions data:', parseError);
-              showToast('Error parsing available sessions', 'error');
+              console.error("Error parsing sessions data:", parseError);
+              showToast("Error parsing available sessions", "error");
             }
           } else {
-            console.warn('No data received from characteristic');
-            showToast('No available sessions found', 'error');
+            console.warn("No data received from characteristic");
+            showToast("No available sessions found", "error");
           }
         })
-        .catch(error => {
-          console.error('Retrieve sessions error:', error);
-          showToast('Failed to retrieve available sessions', 'error');
+        .catch((error) => {
+          console.error("Retrieve sessions error:", error);
+          showToast("Failed to retrieve available sessions", "error");
         })
         .finally(() => {
           setIsFetchingSessions(false);
         });
     },
-    [showToast, markedSessions],
+    [showToast, markedSessions]
   );
 
   const scanAndConnect = useCallback(async () => {
-    if (connectionState !== 'disconnected') {
+    if (connectionState !== "disconnected") {
       console.log(
-        'Already in connection process. Current state:',
-        connectionState,
+        "Already in connection process. Current state:",
+        connectionState
       );
       return;
     }
 
     const permissionsGranted = await requestBlePermissions();
     if (!permissionsGranted) {
-      showToast('Bluetooth permissions not granted', 'error');
+      showToast("Bluetooth permissions not granted", "error");
       return;
     }
 
-    setConnectionState('scanning');
-    console.log('Starting scan');
+    setConnectionState("scanning");
+    console.log("Starting scan");
 
     const scanTimeout = setTimeout(() => {
-      console.log('Scan timeout reached');
+      console.log("Scan timeout reached");
       resetConnection();
-      showToast('Scan timed out. No device found.', 'error');
+      showToast("Scan timed out. No device found.", "error");
     }, SCAN_TIMEOUT);
 
     bleManager.startDeviceScan(null, null, (error, scannedDevice) => {
       if (error) {
-        console.error('Scan error:', error);
+        console.error("Scan error:", error);
         clearTimeout(scanTimeout);
         resetConnection();
-        showToast('Failed to scan for devices', 'error');
+        showToast("Failed to scan for devices", "error");
         return;
       }
 
       if (scannedDevice && scannedDevice.name === DEVICE_NAME) {
-        console.log('Found target device:', DEVICE_NAME);
+        console.log("Found target device:", DEVICE_NAME);
         bleManager.stopDeviceScan();
         clearTimeout(scanTimeout);
 
-        setConnectionState('connecting');
+        setConnectionState("connecting");
         scannedDevice
-          .connect({requestMTU: 512})
-          .then(connectedDevice =>
-            connectedDevice.discoverAllServicesAndCharacteristics(),
+          .connect({ requestMTU: 512 })
+          .then((connectedDevice) =>
+            connectedDevice.discoverAllServicesAndCharacteristics()
           )
-          .then(discoveredDevice => {
-            console.log('Connected and discovered services');
+          .then((discoveredDevice) => {
+            console.log("Connected and discovered services");
             setDevice(discoveredDevice);
-            setConnectionState('connected');
-            showToast('Connected to ESP32-Attendance', 'success');
+            setConnectionState("connected");
+            showToast("Connected to ESP32-Attendance", "success");
             retrieveAvailableSessions(discoveredDevice);
           })
-          .catch(connectError => {
-            console.error('Connection error:', connectError);
+          .catch((connectError) => {
+            console.error("Connection error:", connectError);
             resetConnection();
-            showToast('Failed to connect to ESP32-Attendance', 'error');
+            showToast("Failed to connect to ESP32-Attendance", "error");
           });
       }
     });
@@ -209,7 +204,7 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
 
   useEffect(() => {
     return () => {
-      console.log('Component unmounting, cleaning up BLE');
+      console.log("Component unmounting, cleaning up BLE");
       bleManager.stopDeviceScan();
       device?.cancelConnection();
     };
@@ -217,8 +212,8 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
 
   const markAttendance = useCallback(
     async (session: AttendanceSession) => {
-      if (!device || connectionState !== 'connected') {
-        showToast('Device not connected', 'error');
+      if (!device || connectionState !== "connected") {
+        showToast("Device not connected", "error");
         return;
       }
       setIsMarkingAttendance(true);
@@ -234,21 +229,21 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
         await device.writeCharacteristicWithoutResponseForService(
           SERVICE_UUID,
           CHAR_UUID_MARK_ATTENDANCE,
-          btoa(data),
+          btoa(data)
         );
 
-        const markedAttendance: MarkedAttendance = {...session, timestamp};
+        const markedAttendance: MarkedAttendance = { ...session, timestamp };
         await saveStudentAttendance(markedAttendance);
 
-        setMarkedSessions(prev => [...prev, markedAttendance]);
-        setAvailableSessions(prev =>
-          prev.filter(s => s.sessionId !== session.sessionId),
+        setMarkedSessions((prev) => [...prev, markedAttendance]);
+        setAvailableSessions((prev) =>
+          prev.filter((s) => s.sessionId !== session.sessionId)
         );
 
-        showToast('Attendance marked successfully', 'success');
+        showToast("Attendance marked successfully", "success");
       } catch (error) {
-        console.error('Mark attendance error:', error);
-        showToast('Failed to mark attendance', 'error');
+        console.error("Mark attendance error:", error);
+        showToast("Failed to mark attendance", "error");
       } finally {
         setIsMarkingAttendance(false);
       }
@@ -260,12 +255,12 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
       matricNumber,
       showToast,
       saveStudentAttendance,
-    ],
+    ]
   );
 
   const renderAttendanceSession = (
     session: AttendanceSession | MarkedAttendance,
-    isMarked: boolean,
+    isMarked: boolean
   ) => {
     const expiryDate = new Date(session.expiryTimestamp * 1000);
     const formattedExpiry = formatDistance(Date.now(), expiryDate, {
@@ -292,21 +287,19 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
           <View style={styles.sessionDetails}>
             <View style={styles.dateContainer}>
               <Paragraph style={styles.sessionDate}>
-                {isMarked ? 'Marked:' : 'Expires:'}
+                {isMarked ? "Marked:" : "Expires:"}
               </Paragraph>
               <Paragraph style={styles.dateValue}>
                 {isMarked
                   ? formatDistanceToNow(
                       new Date((session as MarkedAttendance).timestamp * 1000),
-                      {addSuffix: true},
+                      { addSuffix: true }
                     )
                   : formattedExpiry}
               </Paragraph>
             </View>
             {isMarked ? (
-              <Button
-                mode="contained"
-                style={styles.exportButton}>
+              <Button mode="contained" style={styles.exportButton}>
                 Marked
               </Button>
             ) : (
@@ -315,8 +308,9 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
                 onPress={() => markAttendance(session)}
                 disabled={isMarkingAttendance}
                 loading={isMarkingAttendance}
-                style={styles.markButton}>
-                {isMarkingAttendance ? 'Marking...' : 'Mark Attendance'}
+                style={styles.markButton}
+              >
+                {isMarkingAttendance ? "Marking..." : "Mark Attendance"}
               </Button>
             )}
           </View>
@@ -327,8 +321,9 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Card style={styles.card}>
           <Card.Content>
@@ -337,40 +332,42 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
               Name: <Paragraph style={styles.boldText}>{studentName}</Paragraph>
             </Paragraph>
             <Paragraph>
-              Matric Number:{' '}
+              Matric Number:{" "}
               <Paragraph style={styles.boldText}>{matricNumber}</Paragraph>
             </Paragraph>
             <Paragraph
               style={
-                connectionState === 'connected'
+                connectionState === "connected"
                   ? styles.connectedText
                   : styles.disconnectedText
-              }>
+              }
+            >
               Bluetooth Status: {connectionState}
             </Paragraph>
             <Button
               mode="contained"
               onPress={
-                connectionState === 'disconnected'
+                connectionState === "disconnected"
                   ? scanAndConnect
                   : resetConnection
               }
               style={styles.actionButton}
               disabled={
-                connectionState === 'scanning' ||
-                connectionState === 'connecting'
+                connectionState === "scanning" ||
+                connectionState === "connecting"
               }
               loading={
-                connectionState === 'scanning' ||
-                connectionState === 'connecting'
-              }>
-              {connectionState === 'disconnected'
-                ? 'Connect to Device'
-                : connectionState === 'scanning'
-                ? 'Scanning...'
-                : connectionState === 'connecting'
-                ? 'Connecting...'
-                : 'Disconnect'}
+                connectionState === "scanning" ||
+                connectionState === "connecting"
+              }
+            >
+              {connectionState === "disconnected"
+                ? "Connect to Device"
+                : connectionState === "scanning"
+                ? "Scanning..."
+                : connectionState === "connecting"
+                ? "Connecting..."
+                : "Disconnect"}
             </Button>
           </Card.Content>
         </Card>
@@ -382,14 +379,15 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
               <Button
                 mode="outlined"
                 onPress={() => device && retrieveAvailableSessions(device)}
-                disabled={connectionState !== 'connected' || isFetchingSessions}
-                loading={isFetchingSessions}>
-                {isFetchingSessions ? 'Fetching...' : 'Refresh'}
+                disabled={connectionState !== "connected" || isFetchingSessions}
+                loading={isFetchingSessions}
+              >
+                {isFetchingSessions ? "Fetching..." : "Refresh"}
               </Button>
             </View>
             {availableSessions.length > 0 ? (
-              availableSessions.map(session =>
-                renderAttendanceSession(session, false),
+              availableSessions.map((session) =>
+                renderAttendanceSession(session, false)
               )
             ) : (
               <Paragraph style={styles.emptyStateText}>
@@ -403,8 +401,8 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
           <Card.Content>
             <Title style={styles.cardTitle}>Marked Attendances</Title>
             {markedSessions.length > 0 ? (
-              markedSessions.map(session =>
-                renderAttendanceSession(session, true),
+              markedSessions.map((session) =>
+                renderAttendanceSession(session, true)
               )
             ) : (
               <Paragraph style={styles.emptyStateText}>
@@ -422,7 +420,7 @@ const StudentAttendanceScreen: React.FC<StudentAttendanceScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   scrollContent: {
     padding: 16,
@@ -433,33 +431,33 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   cardTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1565c0',
+    fontWeight: "bold",
+    color: "#1565c0",
   },
   actionButton: {
     marginTop: 16,
   },
   emptyStateText: {
-    textAlign: 'center',
-    color: '#666',
-    fontStyle: 'italic',
+    textAlign: "center",
+    color: "#666",
+    fontStyle: "italic",
   },
   connectedText: {
-    color: '#4caf50',
-    fontWeight: 'bold',
+    color: "#4caf50",
+    fontWeight: "bold",
   },
   disconnectedText: {
-    color: '#f44336',
+    color: "#f44336",
   },
   boldText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   sessionCard: {
     marginBottom: 16,
@@ -467,12 +465,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   sessionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   avatar: {
-    backgroundColor: '#1565c0',
+    backgroundColor: "#1565c0",
   },
   sessionInfo: {
     marginLeft: 16,
@@ -480,21 +478,21 @@ const styles = StyleSheet.create({
   },
   sessionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   sessionSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 2,
   },
   divider: {
     marginVertical: 12,
   },
   sessionDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 8,
   },
   dateContainer: {
@@ -502,17 +500,17 @@ const styles = StyleSheet.create({
   },
   sessionDate: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 2,
   },
   dateValue: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: 'bold',
+    color: "#333",
+    fontWeight: "bold",
   },
   exportButton: {
     borderRadius: 8,
-    backgroundColor: '#4caf50', // Green color for export button
+    backgroundColor: "#4caf50", // Green color for export button
   },
   markButton: {
     borderRadius: 8,

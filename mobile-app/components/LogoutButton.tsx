@@ -1,12 +1,12 @@
-import React from 'react';
-import {Button} from 'react-native-paper';
-import {StyleSheet, View} from 'react-native';
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import { Button } from "react-native-paper";
 
 interface LogoutButtonProps {
   onLogout: () => void;
 }
 
-const LogoutButton: React.FC<LogoutButtonProps> = ({onLogout}) => {
+const LogoutButton: React.FC<LogoutButtonProps> = ({ onLogout }) => {
   return (
     <View style={styles.container}>
       <Button mode="contained" onPress={onLogout} style={styles.button}>
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   button: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: "#ff3b30",
   },
 });
 
